@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Para el amor de mi vida</title>
+<style>
+  html, body {
+    margin:0;
+    padding:0;
+    height:100%;
+  }
+
+  body{
+    font-family: "Segoe UI", Arial, sans-serif;
+    background:#fff0f6;
+  }
+
+  .card{
+    background:#fff7f9;
+    width:100%;
+    height:100%;
+    padding:20px;
+    box-sizing:border-box;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto;
+    gap:20px;
+  }
+
+  /* Animaciones */
+  @keyframes fadeIn {
+    from{ opacity:0; transform:scale(0.95); }
+    to{ opacity:1; transform:scale(1); }
+  }
+  @keyframes slideInLeft {
+    from{ opacity:0; transform:translateX(-100%); }
+    to{ opacity:1; transform:translateX(0); }
+  }
+  @keyframes slideInTopLeft {
+    from{ opacity:0; transform:translate(-80px,-80px); }
+    to{ opacity:1; transform:translate(0,0); }
+  }
+
+  /* Carta */
+  .note{
+    grid-column:1/2;
+    grid-row:1/2;
+    font-size:18px;
+    color:#333;
+    animation: slideInTopLeft 1.2s ease forwards;
+    animation-delay:0.5s;
+    opacity:0;
+    align-self:start;
+    white-space: pre-line;
+  }
+
+  .note h1{
+    font-size:28px;
+    color:#e91e63;        /* Rosa estilo My Melody */
+    margin:0 0 15px 0;
+    font-family: "Comic Sans MS", "Segoe UI", Arial, sans-serif;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Imagen */
+  .image-box{
+    grid-column:2/3;
+    grid-row:1/2;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    animation: fadeIn 1.2s ease forwards;
+    animation-delay:0.2s;
+    opacity:0;
+  }
+  .image-box img{
+    max-width:320px;   /* agrandado */
+    max-height:320px;
+    width:100%;
+    height:auto;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,.2);
+  }
+
+  /* Contador */
+  .counter{
+    grid-column:2/3;
+    grid-row:2/3;
+    font-size:22px;
+    color:#444;
+    text-align:center;
+    animation: slideInLeft 1s ease forwards;
+    animation-delay:1.5s;
+    opacity:0;
+    align-self:start;
+  }
+  .counter span{
+    font-weight:bold;
+    font-size:24px;
+    color:#e6457a;
+  }
+
+  /* Botón */
+  .btn-wrapper{
+    grid-column:1/3;
+    grid-row:3/4;
+    text-align:center;
+    margin-top:20px;
+  }
+  .btn{
+    background:#e91e63;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    padding:12px 20px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 4px 8px rgba(0,0,0,.2);
+    transition:background .2s;
+  }
+  .btn:hover{ background:#c2185b; }
+
+  /* 📱 Responsive */
+  @media(max-width:768px){
+    .card{
+      grid-template-columns:1fr;
+      grid-template-rows:auto auto auto auto;
+      height:auto;
+      min-height:100%;
+      padding:20px 15px;
+    }
+    .note{ font-size:16px; grid-column:1/2; grid-row:1/2; }
+    .note h1{ font-size:24px; text-align:center; }
+    .image-box{ grid-column:1/2; grid-row:2/3; margin:20px 0; }
+    .image-box img{ max-width:240px; max-height:240px; }
+    .counter{ font-size:18px; grid-column:1/2; grid-row:3/4; }
+    .counter span{ font-size:20px; }
+    .btn-wrapper{ grid-column:1/2; grid-row:4/5; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Carta -->
+  <div class="note">
+    <h1>Para la grandiosa ferchita :D</h1>
+
+Estoy muy orgulloso de ti, de quien eres y lo fuerte que siempre has sido, me gusta tu forma de ser y realmente no me imagino un mundo sin ti.
+
+Sé que no todo es bueno, y las cosas muchas veces se ponen difíciles, sé lo mucho que siempre intentas seguir a pesar de cualquier cosa y tu poca paciencia, conozco tu fuerza, sé que eres una buena muchachita.
+
+Sólo quiero que sepas que te quiero, me has provocado felicidad, más de la que podría merecer.
+
+Sin importar lo que pase, quiero que sigas siendo tú, que sigas siendo igual de fuertes, y mientras yo pueda intentaré ayudarte.
+
+Linda ferchita, eres lo más bonito y valioso que puede existir 🌻❤️
+  </div>
+
+  <!-- Imagen -->
+  <div class="image-box">
+    <img src="mymelody.png" alt="My Melody">
+  </div>
+
+  <!-- Contador -->
+  <div class="counter" id="counter">
+    Te quiero y admiro desde...<br>
+    <span id="days">0</span> días 
+    <span id="hours">0</span> horas 
+    <span id="minutes">0</span> minutos 
+    <span id="seconds">0</span> segundos
+  </div>
+
+  <!-- Botón -->
+  <div class="btn-wrapper">
+    <button class="btn" onclick="window.location.href='mensajes.html'">
+      Lo que pienso de ti
+    </button>
+  </div>
+</div>
+
+<script>
+  // ==== FECHA DE INICIO ====
+  const startDate = new Date("2023-06-10T18:00:00");
+
+  function updateCounter(){
+    const now = new Date();
+    const diff = now - startDate;
+
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours   = Math.floor(minutes / 60);
+    const days    = Math.floor(hours / 24);
+
+    const d = days;
+    const h = hours % 24;
+    const m = minutes % 60;
+    const s = seconds % 60;
+
+    document.getElementById("days").textContent = d;
+    document.getElementById("hours").textContent = h;
+    document.getElementById("minutes").textContent = m;
+    document.getElementById("seconds").textContent = s;
+  }
+
+  setInterval(updateCounter, 1000);
+  updateCounter();
+</script>
+
+</body>
+</html>

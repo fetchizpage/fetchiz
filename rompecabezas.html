@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rompecabezas My Melody</title>
+<style>
+  body{
+    margin:0;
+    background:#fce4ec;
+    font-family:sans-serif;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+
+  .container{
+    display:flex;
+    gap:20px;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:100%;
+    max-width:800px;
+  }
+
+  /* Tablero */
+  #board{
+    display:grid;
+    grid-template-columns: repeat(3,100px);
+    grid-template-rows: repeat(3,100px);
+    border:3px solid #e91e63;
+    flex-shrink:0;
+  }
+  .cell{
+    width:100px; height:100px;
+    border:1px dashed rgba(233,30,99,0.3);
+  }
+
+  /* Caja de piezas */
+  #pieces{
+    display:flex;
+    flex-wrap:wrap;
+    width:320px;
+    gap:6px;
+    justify-content:center;
+    min-height:320px;
+  }
+  .piece{
+    width:100px; height:100px;
+    background-size:300px 300px;
+    cursor:grab;
+    border:2px solid #e91e63;
+    border-radius:4px;
+    position:relative;
+    touch-action:none; /* necesario en táctil */
+  }
+
+  /* Mientras arrastro */
+  .dragging{
+    opacity:0.7;
+    position:absolute;
+    z-index:1000;
+    pointer-events:none;
+  }
+
+  /* Mensaje final (inicialmente oculto) */
+  #message{
+    display:none;
+    width:320px;
+    min-height:320px;
+    background:#fff;
+    border:2px solid #e91e63;
+    border-radius:10px;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:20px;
+    font-size:18px;
+    color:#c2185b;
+    font-weight:bold;
+  }
+
+  /* Botón volver */
+  .back-btn{
+    position:fixed;
+    bottom:20px; right:20px;
+    background:#e91e63; color:#fff;
+    border:none; border-radius:8px;
+    padding:10px 16px;
+    font-size:15px;
+    cursor:pointer;
+    box-shadow:0 4px 8px rgba(0,0,0,.2);
+  }
+  .back-btn:hover{ background:#c2185b; }
+
+  /* Responsive */
+  @media(max-width:600px){
+    .container{
+      flex-direction:column;
+      align-items:center;
+    }
+    #pieces, #message{
+      width:100%;
+      max-width:330px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div id="board"></div>
+  <div id="pieces"></div>
+  <div id="message">Muy bien ferchita, ya la tienes, devuélvete 🌻</div>
+</div>
+
+<button class="back-btn" onclick="window.location.href='index.html'">🔒 Volver</button>
+
+<script>
+const rows=3, cols=3;
+const image="contraseña.png"; // tu imagen
+const board=document.getElementById("board");
+const piecesBox=document.getElementById("pieces");
+const message=document.getElementById("message");
+
+// Crear celdas
+for(let r=0;r<rows;r++){
+  for(let c=0;c<cols;c++){
+    const cell=document.createElement("div");
+    cell.className="cell";
+    cell.dataset.position=`${r}-${c}`;
+    board.appendChild(cell);
+  }
+}
+
+// Crear piezas
+let pieces=[];
+for(let r=0;r<rows;r++){
+  for(let c=0;c<cols;c++){
+    const piece=document.createElement("div");
+    piece.className="piece";
+    piece.style.backgroundImage=`url(${image})`;
+    piece.style.backgroundPosition=`-${c*100}px -${r*100}px`;
+    piece.dataset.correct=`${r}-${c}`;
+    pieces.push(piece);
+  }
+}
+
+// Mezclar
+pieces.sort(()=>Math.random()-0.5);
+pieces.forEach(p=>piecesBox.appendChild(p));
+
+// Pointer drag & drop
+let currentPiece=null, offsetX=0, offsetY=0;
+
+function pointerDown(e){
+  currentPiece=this;
+  const rect=currentPiece.getBoundingClientRect();
+  offsetX=e.clientX-rect.left;
+  offsetY=e.clientY-rect.top;
+  currentPiece.classList.add("dragging");
+  document.body.appendChild(currentPiece); // flota encima de todo
+  moveAt(e.pageX,e.pageY);
+  document.addEventListener("pointermove",pointerMove);
+  document.addEventListener("pointerup",pointerUp);
+}
+
+function moveAt(x,y){
+  if(currentPiece){
+    currentPiece.style.left=(x-offsetX)+"px";
+    currentPiece.style.top=(y-offsetY)+"px";
+  }
+}
+
+function pointerMove(e){
+  moveAt(e.pageX,e.pageY);
+}
+
+function pointerUp(e){
+  if(!currentPiece) return;
+  currentPiece.classList.remove("dragging");
+
+  // Buscar celda debajo
+  const dropTarget=document.elementFromPoint(e.clientX,e.clientY);
+  if(dropTarget && dropTarget.classList.contains("cell")){
+    if(dropTarget.firstChild){
+      piecesBox.appendChild(dropTarget.firstChild);
+    }
+    dropTarget.innerHTML="";
+    dropTarget.appendChild(currentPiece);
+  }else if(dropTarget && dropTarget.id==="pieces"){
+    piecesBox.appendChild(currentPiece);
+  }else{
+    // si no cayó en nada válido, vuelve a caja
+    piecesBox.appendChild(currentPiece);
+  }
+
+  currentPiece.style.left="";
+  currentPiece.style.top="";
+  currentPiece=null;
+  document.removeEventListener("pointermove",pointerMove);
+  document.removeEventListener("pointerup",pointerUp);
+  checkWin();
+}
+
+// Vincular pointer events a piezas
+pieces.forEach(p=>{
+  p.addEventListener("pointerdown",pointerDown);
+});
+
+// Verificar si ganó
+function checkWin(){
+  let correct=0;
+  const cells=[...board.children];
+  cells.forEach(cell=>{
+    if(cell.firstChild && cell.firstChild.dataset.correct===cell.dataset.position){
+      correct++;
+    }
+  });
+  if(correct===rows*cols){
+    piecesBox.style.display="none";
+    message.style.display="flex";
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mensajes flotando con fondo</title>
+<style>
+  :root{
+    --bubble: #ffffff;
+    --text: #333;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  body{
+    /* Fondo siempre ocupando todo el viewport */
+    background: url("mi-dibujo.png") no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    overflow: hidden; /* quita scroll */
+  }
+
+  /* Escenario cubriendo todo */
+  #stage{
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Burbujas */
+  .bubble{
+    position:absolute;
+    bottom:-3rem;
+    left:50%; transform:translateX(-50%);
+    max-width:min(80vw, 520px);
+    padding:.65rem .95rem;
+    background:var(--bubble);
+    color:var(--text);
+    border-radius:22px;
+    box-shadow:0 10px 24px rgba(0,0,0,.12);
+    white-space:nowrap; 
+    overflow:hidden; 
+    text-overflow:ellipsis;
+    font-size:clamp(14px, 2.4vw, 18px);
+    line-height:1.25;
+    border:1px solid rgba(0,0,0,.06);
+    animation:
+      floatUp var(--dur, 12s) linear var(--delay, 0s) forwards,
+      fadeIO  var(--dur, 12s) ease-in-out var(--delay, 0s) forwards;
+  }
+
+  @keyframes floatUp{
+    from { transform: translate(-50%, 0) }
+    to   { transform: translate(-50%, -110vh) }
+  }
+  @keyframes fadeIO{
+    0%{opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{opacity:0}
+  }
+
+  /* 📱 Ajustes móviles */
+  @media(max-width:768px){
+    body{
+      background-attachment: scroll; /* arregla iOS/Android */
+      background-position: center top;
+    }
+    .bubble{
+      font-size:clamp(12px, 4vw, 16px);
+      max-width:90vw;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+
+<script>
+  const MESSAGES = [
+    "Estoy muy orgulloso de ti :D",
+    "Gracias por ser parte de esta vida C:",
+    "Eres muy especial mi ferchita ❤️",
+    "Te quiero siempre ❤️",
+    "Eres la mejor persona que puede existir 🦆",
+    "Tu existencia es bella ❤️",
+    "Te quiero mucho mas de lo que imaginas ❤️",
+    "Bañate muchachita",
+    "Eres mi persona favorita",
+    "Eres la niña mas inteligentosa del mundo🌻",
+  ];
+
+  const CFG = {
+    spawnEveryMs: 900,
+    minDurationS: 9,
+    maxDurationS: 16,
+    edgePaddingVW: 8,
+    maxConcurrent: 40
+  };
+
+  const stage  = document.getElementById("stage");
+  const rand   = (min, max) => Math.random() * (max - min) + min;
+  const choice = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  function spawnBubble() {
+    if (stage.childElementCount >= CFG.maxConcurrent) return;
+    const el = document.createElement("div");
+    el.className = "bubble";
+    el.textContent = choice(MESSAGES);
+    el.style.left = rand(CFG.edgePaddingVW, 100 - CFG.edgePaddingVW) + "vw";
+    el.style.setProperty("--dur",  rand(CFG.minDurationS, CFG.maxDurationS).toFixed(2) + "s");
+    el.style.setProperty("--delay", rand(0, 1.2).toFixed(2) + "s");
+    el.style.fontSize = `clamp(13px, ${rand(1.9, 3)}vw, 20px)`;
+    el.addEventListener("animationend", () => el.remove(), { once:true });
+    stage.appendChild(el);
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    for (let i=0;i<8;i++) spawnBubble();
+    setInterval(spawnBubble, CFG.spawnEveryMs);
+  });
+</script>
+
+</body>
+</html>
